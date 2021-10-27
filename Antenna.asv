@@ -9,8 +9,8 @@ classdef Antenna
     properties (Dependent)
         cutoffFreqs;            %cutoff frequency [lower, higher]
         Vp;
-        waveGuideDimensions;    %initalise dimensions for waveguide
-        apertureDimensions;     %initalise dimensions for aperture
+        waveGuideDimensions_mm;    %initalise dimensions for waveguide
+        apertureDimensions_mm;     %initalise dimensions for aperture
     end
     
 %     properties (Access = private)
@@ -27,8 +27,8 @@ classdef Antenna
             thisAntenna.bandwidth = BW;                 %set desired bandwidth
             thisAntenna.C = 2.99792e8;                  %set speed of light
             thisAntenna.efficiency = 0.5;               %set efficiency of horn antenna
-            thisAntenna.waveGuideDimensions;
-            thisAntenna.apertureDimensions;
+            thisAntenna.waveGuideDimensions_mm;
+            thisAntenna.apertureDimensions_mm;
         end
         
         function cutoffFreqs = get.cutoffFreqs(thisAntenna)    %calculate upper and lower cutoff frequencies
@@ -47,7 +47,7 @@ classdef Antenna
         end
         
         
-        function waveGuideDimensions = get.waveGuideDimensions(thisAntenna)
+        function waveGuideDimensions_mm = get.waveGuideDimensions_mm(thisAntenna)
            V = thisAntenna.Vp;
            lowerFc = thisAntenna.cutoffFreqs(1);
            upperFc = thisAntenna.cutoffFreqs(2);
@@ -58,18 +58,18 @@ classdef Antenna
            len      = V/(lowerFc);      %set height to wave wavelength of lower frequency
            
            %return waveguide Dimensions and convert to mm
-           waveGuideDimensions = [width, height, len];
+           waveGuideDimensions_mm = [width, height, len];
            
         end
         
-        function apertureDimensions = get.apertureDimensions(thisAntenna)
+        function apertureDimensions_mm = get.apertureDimensions_mm(thisAntenna)
            %Appature apWidth_H is A
            %Appature Height is B         
             
            
            eff          = thisAntenna.efficiency;
-           wgWidth_H    = thisAntenna.waveGuideDimensions(1);    %a parameter
-           wgHeight_E   = thisAntenna.waveGuideDimensions(2);    %b parameter
+           wgWidth_H    = thisAntenna.waveGuideDimensions_mm(1);    %a parameter
+           wgHeight_E   = thisAntenna.waveGuideDimensions_mm(2);    %b parameter
            gain         = thisAntenna.Gain;                         %get desired gian
            opWavelength = thisAntenna.C/thisAntenna.centerFreq; %calculate opperating frequency's wavelength
            
@@ -112,9 +112,9 @@ classdef Antenna
            %Calculate Appature Height
            apHeight_E = 0.5*(wgHeight_E + sqrt(wgHeight_E^2 + (8*apWidth_H*(apWidth_H-wgWidth_H))/3));
            
-           %Calculate Aperture Length  
-           apLength = apWidth_H*(((apWidth_H-wgWidth_H)/(3*opWavelength)));
-           %disp("apLength = " + apLength);
+           %Calculate Aperture Length     
+           apLength = (apWidth_H*((apWidth_H-wgWidth_H/(3*opWavelength))));
+           disp("apLength = " + apLength);
            
            %Calculate Length of slope in E plane 
            Slope_E = sqrt(((apHeight_E-wgHeight_E)/2)^2 + apLength^2);
@@ -124,7 +124,7 @@ classdef Antenna
            edgeLength = sqrt(((apWidth_H-wgWidth_H)/2)^2 + Slope_E^2);
            
            %return apature dimension and convert to mm
-           apertureDimensions = [apWidth_H, apHeight_E, apLength, edgeLength];
+           apertureDimensions_mm = [apWidth_H, apHeight_E, apLength, edgeLength];
  
 %            disp("Appature apWidth_H  A: " + apertureDimensions_mm(1));
 %            disp("Appature Height B: " + apertureDimensions_mm(2));

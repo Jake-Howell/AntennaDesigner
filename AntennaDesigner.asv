@@ -1,4 +1,4 @@
-Horn = Antenna(10, 2.45e9, 100e6);
+Horn = Antenna(33, 2.4e9, 100e6);
 Horn;
 
 disp("---------------------------------");
@@ -9,14 +9,13 @@ disp("Bandwidth            : " + toMHz(Horn.bandwidth) + " MHz");
 disp("Lower Cutoff Freq    : " + toGHz(Horn.cutoffFreqs(1)) + " GHz");
 disp("Upper Cutoff Freq    : " + toGHz(Horn.cutoffFreqs(2)) + " GHz");
 disp(" ");
-disp("Waveguide Width      : " + to_mm(Horn.waveGuideDimensions(1)) + " mm");
-disp("Waveguide Height     : " + to_mm(Horn.waveGuideDimensions(2)) + " mm");
-disp("Waveguide Length     : " + to_mm(Horn.waveGuideDimensions(3)) + " mm");
+disp("Waveguide Width      : " + Horn.waveGuideDimensions_mm(1) + " mm");
+disp("Waveguide Height     : " + Horn.waveGuideDimensions_mm(2) + " mm");
+disp("Waveguide Length     : " + Horn.waveGuideDimensions_mm(3) + " mm");
 disp(" ");
-disp("Apature Width  A     : " + to_mm(Horn.apertureDimensions(1)) + " mm");
-disp("Apature Height B     : " + to_mm(Horn.apertureDimensions(2)) + " mm");
-disp("Apature Length       : " + to_mm(Horn.apertureDimensions(3)) + " mm");
-disp("Apature Edge Length  : " + to_mm(Horn.apertureDimensions(4)) + " mm");
+disp("Apature Width        : " + horn.appatureDimensions_mm (1) + " mm");
+disp("Apature Height       : " + horn.appatureDimensions_mm (2) + " mm");
+disp("Apature Length       : " + horn.appatureDimensions_mm (3) + " mm");
 
 
 
@@ -34,9 +33,3 @@ end
 function KHz = toKHz(Hz)
     KHz = Hz/1e3;               %devide Hz by 1000 to get KHz
 end
-
-%convert meters to mm
-function mm = to_mm(m)
-    mm = m*1000;
-end
-
