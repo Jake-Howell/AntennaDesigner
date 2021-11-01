@@ -7,14 +7,15 @@ classdef Antenna
         efficiency;     %is this dependant or constant? look into how to measure/calculate this
     end
     properties (Dependent)
-        cutoffFreqs;            %cutoff frequency [lower, higher]
+        cutOff;                 %cutoff frequency struct [Lower, Upper]
         Vp;
-        waveGuideDimensions;    %initalise dimensions for waveguide
-        apertureDimensions;     %initalise dimensions for aperture
+        waveGuide;    %initalise dimensions for waveguide
+        aperture;     %initalise dimensions for aperture
+        element;
     end
     
 %     properties (Access = private)
-%         waveGuideDimensions_mm;    %initalise dimensions for waveguide
+%         waveGuide_mm;    %initalise dimensions for waveguide
 %         apertureDimensions_mm;     %initalise dimensions for aperture
 %     end
     
@@ -27,18 +28,19 @@ classdef Antenna
             thisAntenna.bandwidth = BW;                 %set desired bandwidth
             thisAntenna.C = 2.99792e8;                  %set speed of light
             thisAntenna.efficiency = 0.5;               %set efficiency of horn antenna
-            thisAntenna.waveGuideDimensions;
-            thisAntenna.apertureDimensions;
+            thisAntenna.waveGuide;
+            thisAntenna.aperture;
         end
         
-        function cutoffFreqs = get.cutoffFreqs(thisAntenna)    %calculate upper and lower cutoff frequencies
+        function cutOff = get.cutOff(thisAntenna)    %calculate upper and lower cutoff frequencies
             centerF = thisAntenna.centerFreq;
             bw = thisAntenna.bandwidth;
             
             lowerFc = centerF -(bw/2);    %calculate lower
             upperFc = centerF +(bw/2);    %calculate upper
             
-            cutoffFreqs = [lowerFc, upperFc];  %store as 1x2 vector [lower fc, upper fc]
+            cutOff.Lower = lowerFc;  %store values in struct
+            cutOff.Upper = upperFc;
             
         end
         
@@ -46,30 +48,38 @@ classdef Antenna
             Vp = thisAntenna.C*0.95;            %multiply speed of light by 0.95 to get velocity of propergation of copper
         end
         
-        
-        function waveGuideDimensions = get.waveGuideDimensions(thisAntenna)
-           V = thisAntenna.Vp;
-           lowerFc = thisAntenna.cutoffFreqs(1);
-           upperFc = thisAntenna.cutoffFreqs(2);
-           
-           
-           width    = V/(2*upperFc);    %set width to half wavelength of upper cutoff frequency
-           height   = V/(4*upperFc);    %set height to quater wavelength of upper cutoff frequency
-           len      = V/(lowerFc);      %set height to wave wavelength of lower frequency
-           
-           %return waveguide Dimensions and convert to mm
-           waveGuideDimensions = [width, height, len];
+        function element = get.element(thisAntenna)
+           element.waveLength = (thisAntenna.Vp)/(thisAntenna.centerFreq);
+            
+           element.length = element.waveLength/4;
+           element.distance = ((element.waveLength)/sqrt(1-(thisAntenna.cutOff.Lower/thisAntenna.centerFreq)^2))/4;
            
         end
         
-        function apertureDimensions = get.apertureDimensions(thisAntenna)
+        function waveGuide = get.waveGuide(thisAntenna)
+           V = thisAntenna.Vp;
+           lowerFc = thisAntenna.cutOff.Lower;
+           
+           
+           width    = V/(2*lowerFc);    %set width to half wavelength of upper cutoff frequency
+           height   = V/(4*lowerFc);    %set height to quater wavelength of upper cutoff frequency
+           len      = V/(lowerFc);      %set length to full wavelength of lower frequency
+           
+           %return waveguide Dimensions and convert to mm
+           waveGuide.width = width;
+           waveGuide.height = height;
+           waveGuide.length = len;
+           
+        end
+        
+        function aperture = get.aperture(thisAntenna)
            %Appature apWidth_H is A
            %Appature Height is B         
             
            
            eff          = thisAntenna.efficiency;
-           wgWidth_H    = thisAntenna.waveGuideDimensions(1);    %a parameter
-           wgHeight_E   = thisAntenna.waveGuideDimensions(2);    %b parameter
+           wgWidth_H    = thisAntenna.waveGuide.width;    %a parameter
+           wgHeight_E   = thisAntenna.waveGuide.height;    %b parameter
            gain         = thisAntenna.Gain;                         %get desired gian
            opWavelength = thisAntenna.C/thisAntenna.centerFreq; %calculate opperating frequency's wavelength
            
@@ -112,23 +122,26 @@ classdef Antenna
            %Calculate Appature Height
            apHeight_E = 0.5*(wgHeight_E + sqrt(wgHeight_E^2 + (8*apWidth_H*(apWidth_H-wgWidth_H))/3));
            
-           %Calculate Aperture Length  
-           apLength = apWidth_H*(((apWidth_H-wgWidth_H)/(3*opWavelength)));
-           %disp("apLength = " + apLength);
+           %Calculate Aperture Depth  
+           apDepth = apWidth_H*(((apWidth_H-wgWidth_H)/(3*opWavelength)));
+           %disp("apDepth = " + apDepth);
            
            %Calculate Length of slope in E plane 
-           Slope_E = sqrt(((apHeight_E-wgHeight_E)/2)^2 + apLength^2);
+           Slope_E = sqrt(((apHeight_E-wgHeight_E)/2)^2 + apDepth^2);
            %disp("slope_E = " + Slope_E);
+           Slope_H = sqrt(((apWidth_H-wgWidth_H)/2)^2 + apDepth^2);
            
            %add component of H plane to find edge length
            edgeLength = sqrt(((apWidth_H-wgWidth_H)/2)^2 + Slope_E^2);
            
-           %return apature dimension and convert to mm
-           apertureDimensions = [apWidth_H, apHeight_E, apLength, edgeLength];
- 
-%            disp("Appature apWidth_H  A: " + apertureDimensions_mm(1));
-%            disp("Appature Height B: " + apertureDimensions_mm(2));
-%            disp("Appature Length L: " + apertureDimensions_mm(3));
+           %return apature dimension
+           %apertureDimensions = [apWidth_H, apHeight_E, apDepth, edgeLength, Slope_E, Slope_H];
+           aperture.width       = apWidth_H;
+           aperture.height      = apHeight_E;
+           aperture.depth       = apDepth;
+           aperture.edgeLength  = edgeLength;
+           aperture.slope_E     = Slope_E;
+           aperture.slope_H     = Slope_H;
         end
         
 
