@@ -12,6 +12,7 @@ classdef Antenna
         waveGuide;    %initalise dimensions for waveguide
         aperture;     %initalise dimensions for aperture
         element;
+        
     end
     
 %     properties (Access = private)
@@ -143,35 +144,100 @@ classdef Antenna
            aperture.slope_E     = Slope_E;
            aperture.slope_H     = Slope_H;
         end
-        
-
-
-%             waveLength = Vp/obj.fc(1);
-%             
-%             waveLengthFc = [Vp/obj.fc(1), Vp/obj.fc(2)];
-%            
-%             
-%             efficiency = 0.5;
-%                            
-%             
-%             AQuartic = [1 -a  0 ((3*b*obj.Gain*waveLengthFc(1)^2)/(8*pi*efficiency)) -((3*(obj.Gain^2)*(waveLength(1)^4))/(32*(pi^2)*(efficiency^2)))]; 
-%             X = 0:0.01:2;
-%             Y = X*AQuartic;
-%             plot(X,Y);
-%             
-%             roots(AQuartic)
-%             %A^4-a*A^3+((3*b*Gain*waveLengthFc(1)^2)/(8*pi*efficency))*A-((3*(Gain^2)*(waveLength(1)^4))/(32*(pi^2)*(efficiency^2)))
-%             
-%             
-%         end
-
-    end
     
-    
-    
-    
-    methods (Static)
-       
-    end
-    
+        %function to return xyz coordinates to plot in 3D
+        function display3D(thisAntenna)
+            thisAntenna.waveGuide;
+            x = [0 0 0];
+            y = [0 0 0];
+            z = [0 0 0];
+            
+            
+            
+            x(1) = 0;
+            x(2) = thisAntenna.waveGuide.length;
+            x(3) = x(2) + thisAntenna.aperture.depth;
+            
+            y(1) = 0;
+            y(2) = thisAntenna.waveGuide.width;
+            y(3) = (thisAntenna.aperture.width - y(2))/2; %create correct off set for y(3)
+            
+            z(1) = 0;
+            z(2) = thisAntenna.waveGuide.height;
+            z(3) = (thisAntenna.aperture.height - z(2))/2; %create correct offset got z(3)
+            
+%             xyz = 100*[x;y;z;]; %convert to cm
+            x = x*100;
+            y = y*100;
+            z = z*100;
+            
+                      
+            clf
+            grid on
+                
+                %back wall of wave guide
+                x1 = [x(1),x(1),x(1),x(1)];
+                y1 = [y(1),y(1),y(2),y(2)];
+                z1 = [z(1),z(2),z(2),z(1)];
+                patch(x1, y1, z1,'red');
+                
+                %front side of waveguide
+                x4 = [x(1),x(1),x(2),x(2)];
+                y4 = [y(1),y(1),y(1),y(1)];
+                z4 = [z(1),z(2),z(2),z(1)];
+                patch(x4, y4, z4, 'green');
+                %back of waveguide
+                x5 = [x(1),x(1),x(2),x(2)];
+                y5 = [y(2),y(2),y(2),y(2)];
+                z5 = [z(1),z(2),z(2),z(1)];
+                patch(x5, y5, z5, 'green');
+                %top of wave guide
+                x6 = [x(1),x(1),x(2),x(2)];
+                y6 = [y(1),y(2),y(2),y(1)];
+                z6 = [z(2),z(2),z(2),z(2)];
+                patch(x6, y6, z6, 'black');
+                %bottom of waveguide
+                x7 = [x(1),x(1),x(2),x(2)];
+                y7 = [y(1),y(2),y(2),y(1)];
+                z7 = [z(1),z(1),z(1),z(1)];
+                patch(x7, y7, z7, 'black');
+                
+                %front side of aperture
+                x8 = [x(2),x(2),x(3),x(3)];
+                y8 = [y(1),y(1),-y(3),-y(3)];
+                z8 = [z(1),z(2),(z(2)+z(3)),-z(3)];
+                patch(x8, y8, z8, 'blue');
+                
+                %back side of aperture
+                x9 = [x(2),x(2),x(3),x(3)];
+                y9 = [y(2),y(2),(y(2)+y(3)),(y(2)+y(3))];
+                z9 = [z(1),z(2),(z(2)+z(3)),-z(3)];
+                patch(x9, y9, z9, 'blue');
+                
+                %top side of aperture
+                x10 = [x(2),x(2),x(3),x(3)];
+                y10 = [y(1),y(2),(y(2)+y(3)),-y(3)];
+                z10 = [z(2),z(2),(z(2)+z(3)),(z(2)+z(3))];
+                patch(x10, y10, z10, 'red');
+                
+                %botom side of aperture
+                x10 = [x(2),x(2),x(3),x(3)];
+                y10 = [y(1),y(2),(y(2)+y(3)),-y(3)];
+                z10 = [z(1),z(1),-z(3),-z(3)];
+                patch(x10, y10, z10,'red')
+                %patch(x10, y10, z10, 'EdgeColor','blue', 'FaceColor','black');
+                
+                %setup figure
+                g = thisAntenna.Gain;
+                cf = thisAntenna.centerFreq/1e9;
+                bw = thisAntenna.bandwidth/1e6;
+                title('Horn Antenna','Gain: ' + string(g) + 'dB  ' + 'CF: ' + string(cf) + 'GHz   BW: ' + string(bw) + 'MHz');
+                xlabel('Direction of Propagation (cm)');
+                ylabel('H-Plane (cm)');
+                zlabel('E-Plane (cm)');
+                axis padded;
+                camlight('headlight');
+            end
+        end
 end
+

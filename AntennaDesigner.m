@@ -4,29 +4,31 @@ Horn;
 
 
 display_Dimensions(Horn);
+Horn.display3D;
+% patch(Horn.coordinates.x, Horn.coordinates.y, Horn.coordinates.z,'red');
 
 function display_Dimensions(thisAntenna)
-disp("---------------------------------");
-disp("Horn Properties:");
-disp("Gain                 : " + thisAntenna.Gain);
-disp("Opperating Frequency : " + toGHz(thisAntenna.centerFreq) + " GHz");
-disp("Bandwidth            : " + toMHz(thisAntenna.bandwidth) + " MHz");
-disp("Lower Cutoff Freq    : " + toGHz(thisAntenna.cutOff.Lower) + " GHz");
-disp("Upper Cutoff Freq    : " + toGHz(thisAntenna.cutOff.Upper) + " GHz");
-disp(" ");
-disp("Waveguide Width      : " + to_cm(thisAntenna.waveGuide.width) + " cm");
-disp("Waveguide Height     : " + to_cm(thisAntenna.waveGuide.height) + " cm");
-disp("Waveguide Length     : " + to_cm(thisAntenna.waveGuide.length) + " cm");
-disp(" ");
-disp("Element length       : " + to_cm(thisAntenna.element.length) + "cm");
-disp("Element distance     : " + to_cm(thisAntenna.element.distance) + "cm");
-disp(" ");
-disp("Apature Width  A     : " + to_cm(thisAntenna.aperture.width) + " cm");
-disp("Apature Height B     : " + to_cm(thisAntenna.aperture.height) + " cm");
-disp("Apature Length       : " + to_cm(thisAntenna.aperture.depth) + " cm");
-disp("Apature Edge Length  : " + to_cm(thisAntenna.aperture.edgeLength) + " cm");
-disp("Apature Slope_E      : " + to_cm(thisAntenna.aperture.slope_E) + " cm");
-disp("Apature Slope_H      : " + to_cm(thisAntenna.aperture.slope_H) + " cm");
+    disp("---------------------------------");
+    disp("Horn Properties:");
+    disp("Gain                 : " + thisAntenna.Gain);
+    disp("Opperating Frequency : " + toGHz(thisAntenna.centerFreq) + " GHz");
+    disp("Bandwidth            : " + toMHz(thisAntenna.bandwidth) + " MHz");
+    disp("Lower Cutoff Freq    : " + toGHz(thisAntenna.cutOff.Lower) + " GHz");
+    disp("Upper Cutoff Freq    : " + toGHz(thisAntenna.cutOff.Upper) + " GHz");
+    disp(" ");
+    disp("Waveguide Width      : " + to_cm(thisAntenna.waveGuide.width) + " cm");
+    disp("Waveguide Height     : " + to_cm(thisAntenna.waveGuide.height) + " cm");
+    disp("Waveguide Length     : " + to_cm(thisAntenna.waveGuide.length) + " cm");
+    disp(" ");
+    disp("Element length       : " + to_cm(thisAntenna.element.length) + "cm");
+    disp("Element distance     : " + to_cm(thisAntenna.element.distance) + "cm");
+    disp(" ");
+    disp("Apature Width  A     : " + to_cm(thisAntenna.aperture.width) + " cm");
+    disp("Apature Height B     : " + to_cm(thisAntenna.aperture.height) + " cm");
+    disp("Apature Length       : " + to_cm(thisAntenna.aperture.depth) + " cm");
+    disp("Apature Edge Length  : " + to_cm(thisAntenna.aperture.edgeLength) + " cm");
+    disp("Apature Slope_E      : " + to_cm(thisAntenna.aperture.slope_E) + " cm");
+    disp("Apature Slope_H      : " + to_cm(thisAntenna.aperture.slope_H) + " cm");
 end
 
 
