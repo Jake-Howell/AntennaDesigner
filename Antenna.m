@@ -5,6 +5,7 @@ classdef Antenna
         bandwidth;
         C;              %speed of light
         efficiency;     %is this dependant or constant? look into how to measure/calculate this
+        name;
     end
     properties (Dependent)
         cutOff;                 %cutoff frequency struct [Lower, Upper]
@@ -14,23 +15,22 @@ classdef Antenna
         element;
         
     end
-    
-%     properties (Access = private)
-%         waveGuide_mm;    %initalise dimensions for waveguide
-%         apertureDimensions_mm;     %initalise dimensions for aperture
-%     end
-    
+   
     methods
        
         
-        function thisAntenna = Antenna(G, CF, BW)    %constructor
+        function thisAntenna = Antenna(G, CF, BW, name)    %constructor
             thisAntenna.Gain = G;                       %set desired gain
             thisAntenna.centerFreq = CF;                %set desired center frequency
             thisAntenna.bandwidth = BW;                 %set desired bandwidth
             thisAntenna.C = 2.99792e8;                  %set speed of light
             thisAntenna.efficiency = 0.5;               %set efficiency of horn antenna
+            thisAntenna.name = name;                    %give antenna a name
             thisAntenna.waveGuide;
             thisAntenna.aperture;
+            thisAntenna.printDimensions;
+            thisAntenna.display3D;
+            
         end
         
         function cutOff = get.cutOff(thisAntenna)    %calculate upper and lower cutoff frequencies
@@ -145,15 +145,13 @@ classdef Antenna
            aperture.slope_H     = Slope_H;
         end
     
-        %function to return xyz coordinates to plot in 3D
+        %function to display horn antenna in 3D
         function display3D(thisAntenna)
             thisAntenna.waveGuide;
             x = [0 0 0];
             y = [0 0 0];
             z = [0 0 0];
-            
-            
-            
+
             x(1) = 0;
             x(2) = thisAntenna.waveGuide.length;
             x(3) = x(2) + thisAntenna.aperture.depth;
@@ -166,78 +164,122 @@ classdef Antenna
             z(2) = thisAntenna.waveGuide.height;
             z(3) = (thisAntenna.aperture.height - z(2))/2; %create correct offset got z(3)
             
-%             xyz = 100*[x;y;z;]; %convert to cm
             x = x*100;
             y = y*100;
             z = z*100;
             
-                      
-            clf
-            grid on
-                
-                %back wall of wave guide
-                x1 = [x(1),x(1),x(1),x(1)];
-                y1 = [y(1),y(1),y(2),y(2)];
-                z1 = [z(1),z(2),z(2),z(1)];
-                patch(x1, y1, z1,'red');
-                
-                %front side of waveguide
-                x4 = [x(1),x(1),x(2),x(2)];
-                y4 = [y(1),y(1),y(1),y(1)];
-                z4 = [z(1),z(2),z(2),z(1)];
-                patch(x4, y4, z4, 'green');
-                %back of waveguide
-                x5 = [x(1),x(1),x(2),x(2)];
-                y5 = [y(2),y(2),y(2),y(2)];
-                z5 = [z(1),z(2),z(2),z(1)];
-                patch(x5, y5, z5, 'green');
-                %top of wave guide
-                x6 = [x(1),x(1),x(2),x(2)];
-                y6 = [y(1),y(2),y(2),y(1)];
-                z6 = [z(2),z(2),z(2),z(2)];
-                patch(x6, y6, z6, 'black');
-                %bottom of waveguide
-                x7 = [x(1),x(1),x(2),x(2)];
-                y7 = [y(1),y(2),y(2),y(1)];
-                z7 = [z(1),z(1),z(1),z(1)];
-                patch(x7, y7, z7, 'black');
-                
-                %front side of aperture
-                x8 = [x(2),x(2),x(3),x(3)];
-                y8 = [y(1),y(1),-y(3),-y(3)];
-                z8 = [z(1),z(2),(z(2)+z(3)),-z(3)];
-                patch(x8, y8, z8, 'blue');
-                
-                %back side of aperture
-                x9 = [x(2),x(2),x(3),x(3)];
-                y9 = [y(2),y(2),(y(2)+y(3)),(y(2)+y(3))];
-                z9 = [z(1),z(2),(z(2)+z(3)),-z(3)];
-                patch(x9, y9, z9, 'blue');
-                
-                %top side of aperture
-                x10 = [x(2),x(2),x(3),x(3)];
-                y10 = [y(1),y(2),(y(2)+y(3)),-y(3)];
-                z10 = [z(2),z(2),(z(2)+z(3)),(z(2)+z(3))];
-                patch(x10, y10, z10, 'red');
-                
-                %botom side of aperture
-                x10 = [x(2),x(2),x(3),x(3)];
-                y10 = [y(1),y(2),(y(2)+y(3)),-y(3)];
-                z10 = [z(1),z(1),-z(3),-z(3)];
-                patch(x10, y10, z10,'red')
-                %patch(x10, y10, z10, 'EdgeColor','blue', 'FaceColor','black');
-                
-                %setup figure
-                g = thisAntenna.Gain;
-                cf = thisAntenna.centerFreq/1e9;
-                bw = thisAntenna.bandwidth/1e6;
-                title('Horn Antenna','Gain: ' + string(g) + 'dB  ' + 'CF: ' + string(cf) + 'GHz   BW: ' + string(bw) + 'MHz');
-                xlabel('Direction of Propagation (cm)');
-                ylabel('H-Plane (cm)');
-                zlabel('E-Plane (cm)');
-                axis padded;
-                camlight('headlight');
-            end
+            f = figure;
+            %back wall of wave guide
+            x1 = [x(1),x(1),x(1),x(1)];
+            y1 = [y(1),y(1),y(2),y(2)];
+            z1 = [z(1),z(2),z(2),z(1)];
+            patch(x1, y1, z1,'red');
+
+            %front side of waveguide
+            x4 = [x(1),x(1),x(2),x(2)];
+            y4 = [y(1),y(1),y(1),y(1)];
+            z4 = [z(1),z(2),z(2),z(1)];
+            patch(x4, y4, z4, 'green');
+            %back of waveguide
+            x5 = [x(1),x(1),x(2),x(2)];
+            y5 = [y(2),y(2),y(2),y(2)];
+            z5 = [z(1),z(2),z(2),z(1)];
+            patch(x5, y5, z5, 'green');
+            %top of wave guide
+            x6 = [x(1),x(1),x(2),x(2)];
+            y6 = [y(1),y(2),y(2),y(1)];
+            z6 = [z(2),z(2),z(2),z(2)];
+            patch(x6, y6, z6, 'black');
+            %bottom of waveguide
+            x7 = [x(1),x(1),x(2),x(2)];
+            y7 = [y(1),y(2),y(2),y(1)];
+            z7 = [z(1),z(1),z(1),z(1)];
+            patch(x7, y7, z7, 'black');
+
+            %front side of aperture
+            x8 = [x(2),x(2),x(3),x(3)];
+            y8 = [y(1),y(1),-y(3),-y(3)];
+            z8 = [z(1),z(2),(z(2)+z(3)),-z(3)];
+            patch(x8, y8, z8, 'blue');
+
+            %back side of aperture
+            x9 = [x(2),x(2),x(3),x(3)];
+            y9 = [y(2),y(2),(y(2)+y(3)),(y(2)+y(3))];
+            z9 = [z(1),z(2),(z(2)+z(3)),-z(3)];
+            patch(x9, y9, z9, 'blue');
+
+            %top side of aperture
+            x10 = [x(2),x(2),x(3),x(3)];
+            y10 = [y(1),y(2),(y(2)+y(3)),-y(3)];
+            z10 = [z(2),z(2),(z(2)+z(3)),(z(2)+z(3))];
+            patch(x10, y10, z10, 'red');
+
+            %botom side of aperture
+            x10 = [x(2),x(2),x(3),x(3)];
+            y10 = [y(1),y(2),(y(2)+y(3)),-y(3)];
+            z10 = [z(1),z(1),-z(3),-z(3)];
+            patch(x10, y10, z10,'red')
+            %patch(x10, y10, z10, 'EdgeColor','blue', 'FaceColor','black');
+
+            %setup figure
+
+            g = thisAntenna.Gain;
+            cf = thisAntenna.centerFreq/1e9;
+            bw = thisAntenna.bandwidth/1e6;
+            title(thisAntenna.name,'Gain: ' + string(g) + 'dB  ' + 'CF: ' + string(cf) + 'GHz   BW: ' + string(bw) + 'MHz');
+            xlabel('Direction of Propagation (cm)');
+            ylabel('H-Plane (cm)');
+            zlabel('E-Plane (cm)');
+            axis padded;
+            camlight('headlight');
+            view([37.5,30]);    %set camera position for plot
         end
+        function printDimensions(thisAntenna)
+                disp("---------------------------------");
+                disp(thisAntenna.name + " Properties:");
+                disp("Gain                 : " + thisAntenna.Gain);
+                disp("Opperating Frequency : " + thisAntenna.toGHz(thisAntenna.centerFreq) + " GHz");
+                disp("Bandwidth            : " + thisAntenna.toMHz(thisAntenna.bandwidth) + " MHz");
+                disp("Lower Cutoff Freq    : " + thisAntenna.toGHz(thisAntenna.cutOff.Lower) + " GHz");
+                disp("Upper Cutoff Freq    : " + thisAntenna.toGHz(thisAntenna.cutOff.Upper) + " GHz");
+                disp(" ");
+                disp("Waveguide Width      : " + thisAntenna.to_cm(thisAntenna.waveGuide.width) + " cm");
+                disp("Waveguide Height     : " + thisAntenna.to_cm(thisAntenna.waveGuide.height) + " cm");
+                disp("Waveguide Length     : " + thisAntenna.to_cm(thisAntenna.waveGuide.length) + " cm");
+                disp(" ");
+                disp("Element length       : " + thisAntenna.to_cm(thisAntenna.element.length) + "cm");
+                disp("Element distance     : " + thisAntenna.to_cm(thisAntenna.element.distance) + "cm");
+                disp(" ");
+                disp("Apature Width  A     : " + thisAntenna.to_cm(thisAntenna.aperture.width) + " cm");
+                disp("Apature Height B     : " + thisAntenna.to_cm(thisAntenna.aperture.height) + " cm");
+                disp("Apature Length       : " + thisAntenna.to_cm(thisAntenna.aperture.depth) + " cm");
+                disp("Apature Edge Length  : " + thisAntenna.to_cm(thisAntenna.aperture.edgeLength) + " cm");
+                disp("Apature Slope_E      : " + thisAntenna.to_cm(thisAntenna.aperture.slope_E) + " cm");
+                disp("Apature Slope_H      : " + thisAntenna.to_cm(thisAntenna.aperture.slope_H) + " cm");
+        end
+        
+        %some functions to convert from Hz to KHz, MHz, GHz
+        function GHz = toGHz(~,Hz)
+            GHz = Hz/1e9; %devide MHz by 1000 to get GHz
+        end
+
+        function MHz = toMHz(~, Hz)
+            MHz = Hz/1e6;                   %devide KHz by 1000 to get MHz
+        end
+
+        function KHz = toKHz(~, Hz)
+            KHz = Hz/1e3;               %devide Hz by 1000 to get KHz
+        end
+
+        %convert meters to mm
+        function mm = to_mm(~, m)
+            mm = m*1000;
+        end
+
+        function cm = to_cm(~, m)
+            cm = m*100;
+        end
+    end
+   
 end
 
