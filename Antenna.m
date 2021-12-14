@@ -13,7 +13,6 @@ classdef Antenna
         waveGuide;    %initalise dimensions for waveguide
         aperture;     %initalise dimensions for aperture
         element;
-        
     end
    
     methods
@@ -84,13 +83,6 @@ classdef Antenna
            gain         = thisAntenna.Gain;                         %get desired gian
            opWavelength = thisAntenna.C/thisAntenna.centerFreq; %calculate opperating frequency's wavelength
            
-           
-%            disp("eff:          " + eff);
-%            disp("wgWidth_H:      " + wgWidth_H);
-%            disp("wgHeight_E      " + wgHeight_E);
-%            disp("Gain          " + gain);
-%            disp("opWavelength: " + opWavelength);
-
 
            %calculating coeff's of A (Appature apWidth_H H-Plane)
            A4 = 1;
